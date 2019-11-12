@@ -48,8 +48,8 @@ def homepage():
             /api/v1.0/precipitation : Precipitation data for the last year <br/>
             /api/v1.0/stations : List of all weather observation stations in database <br/>
             /api/v1.0/tobs : Temperature data for the last year <br/>
+            ** For datasearch paths, after the final '/' add the date of your choice in a YYYY-MM-DD format. ** <br/>
             /api/v1.0/datesearch/<start> : Return a JSON list of the minimum, average, and maximum temperature for the given start date to present (between August 23rd, 2016 and 2017) <br/>
-            ** After the above route, add the date of your choice in a YYYY-MM-DD format. ** <br/>
             /api/v1.0/datesearch/<start>/<end> : Calculate the above for days between the start and end date given
             """)
 
@@ -72,13 +72,12 @@ def precipitation():
 @app.route("/api/v1.0/stations")
 def stations():
     staRslts = session.query(Station.station, Station.name).all()
-    staRslts = list(np.ravel(staRslts))
     staLst = []
 
     for Rslt in staRslts:
         staDict = {Rslt.station: Rslt.name}
         staLst.append(staDict)
-    #[staLst.append({Rslt.station: Rslt.name}) for Rslt in staRslts]
+    [staLst.append({Rslt.station: Rslt.name}) for Rslt in staRslts]
 
     return jsonify(staLst)
 
@@ -86,7 +85,7 @@ def stations():
 def start(start):
     sel = [Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
 
-    results =  (session.query(*sel)
+    Rslts =  (session.query(*sel)
                        .filter(func.strftime("%Y-%m-%d", Measurement.date) >= start)
                        .group_by(Measurement.date)
                        .all())
@@ -105,7 +104,7 @@ def start(start):
 def startEnd(start, end):
     sel = [Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
 
-    results =  (session.query(*sel)
+    Rslts =  (session.query(*sel)
                        .filter(func.strftime("%Y-%m-%d", Measurement.date) >= start)
                        .filter(func.strftime("%Y-%m-%d", Measurement.date) <= end)
                        .group_by(Measurement.date)
