@@ -42,15 +42,16 @@ oneyearago = dt.datetime.strftime(oneyearago, '%Y-%m-%d')
 @app.route('/')
 def homepage():
     return (f"""
-            Surf's Up! Homepage: Hawai Climate API <br/>
+            Surf's Up! Homepage: Hawaii Climate API <br/>
+            All temperature and station data concerns the dates between August 23rd, 2016 to 2017 in Hawaii, USA
             ---------------------------------------------- <br/>
             Avaliable Routes (Table of Contents) <br/> <br/>
             /api/v1.0/precipitation : Precipitation data for the last year <br/>
             /api/v1.0/stations : List of all weather observation stations in database <br/>
-            /api/v1.0/tobs : Temperature data for the last year <br/>
-            ** For datasearch paths, after the final '/' add the date of your choice in a YYYY-MM-DD format. ** <br/>
-            /api/v1.0/datesearch/<start> : Return a JSON list of the minimum, average, and maximum temperature for the given start date to present (between August 23rd, 2016 and 2017) <br/>
-            /api/v1.0/datesearch/<start>/<end> : Calculate the above for days between the start and end date given
+            /api/v1.0/tobs : Temperature measurements for everyday in the last year <br/>
+            ** For the following datasearch range paths, after the final '/' add the date of your choice in a YYYY-MM-DD format. ** <br/>
+            /api/v1.0/datesearch/start : Return a JSON list of the minimum, average, and maximum temperature for the given start date to last date in the database (between August 23rd, 2016 and 2017) <br/>
+            /api/v1.0/datesearch/start/end : Calculate the above for days between the start and end date given (must be between August 23rd, 2016 and 2017)
             """)
 
 @app.route("/api/v1.0/precipitation")
@@ -80,6 +81,16 @@ def stations():
     [staLst.append({Rslt.station: Rslt.name}) for Rslt in staRslts]
 
     return jsonify(staLst)
+
+@app.route("/api/v1.0/tobs")
+def tobs():
+    Rslts = session.query(Measurement.tobs).\
+        filter(Measurement.date >= "2016-08-23").\
+        filter(Measurement.date <= "2017-08-23").all()
+
+    Rslts_Lst = list(np.ravel(Rslts))
+
+    return jsonify(Rslts_Lst)
 
 @app.route('/api/v1.0/datesearch/<start>')
 def start(start):
